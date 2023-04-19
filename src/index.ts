@@ -12,7 +12,7 @@ const channelID = process.env.CHANNEL_ID
 
 // Cooldown for Presence Update
 const cooldown = new Collection<string, number>();
-const cooldownDuration = 1 * 1 * 1000; 
+const cooldownDuration = 15 * 60 * 1000; 
 
 client.once('ready', () => {
   console.log(`Logged in as ${client.user!.tag}!`);
@@ -51,7 +51,7 @@ client.on('presenceUpdate', (oldPresence, newPresence) => {
       .setTimestamp(Date.now())
       .setFooter({ text: 'TAKASUI NEWS NETWORK' });
 
-    channel.send({ embeds: [newsEmbed] });
+    channel.send({content: `@everyone`, embeds: [newsEmbed] });
     
     console.log(
       `${newPresence.user!.tag} changed status from ${oldStatus} to ${newStatus}.`
