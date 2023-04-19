@@ -1,0 +1,15 @@
+# Node.js dependencies
+/node_modules/
+
+# Output folder for TypeScript compilation
+/dist/
+
+# Environment variables
+.env
+
+# Editor and operating system specific files
+.vscode/
+*.log
+*.swp
+*.swo
+.DS_Store
