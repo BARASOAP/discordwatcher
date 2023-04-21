@@ -4,8 +4,17 @@ A simple Discord bot created using TypeScript and discord.js.
 
 ## Features
 
-- Sends user custom status changes to a discord channel
-- Implements cooldown to prevent spam
+1. Tracks status changes of the Watcher.
+2. Notifies a specific text channel when the Watcher's status changes.
+3. Debug mode for easier development and debugging.
+4. Admin can control debug mode, clear and check timeouts via DM commands.
+
+### Commands available for the Admin via DM:
+1. 'debug true': Enable debug mode.
+2. 'debug false': Disable debug mode.
+3. 'debug status': Get the current status of the bot, including uptime and debug mode.
+4. 'debug cleartimeout': Clear the current timeout for the presence update event.
+5. 'debug gettimeout': Get the time remaining for the presence update event timeout.
 
 ## Setup
 
@@ -24,12 +33,21 @@ cd discordwatcher
 
 3. Install dependencies:
 
-4. Create a `.env` file in the project's root directory and fill the info
+4. Create a `.env` file in the project's root directory and fill in the info 
 
-WATCHER_ID=''
-CHANNEL_ID=''
-TOKEN=""
+`TOKEN=""`
 
+5. Create a `config.json` file in the project's root directory and fill in the info
+
+```json
+{
+  "WATCHER_ID": "user_id",
+  "CHANNEL_ID": "channel_id",
+  "ADMIN_ID": "admin_user_id",
+  "EMBED_COLOR": "color_code(ex.0099FF)",
+  "EMBED_FOOTER_TEXT": "bot_name"
+}
+```
 ### Running the Bot
 
 1. Compile the TypeScript code:
