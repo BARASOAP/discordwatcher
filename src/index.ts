@@ -102,12 +102,14 @@ client.on('messageCreate', async (message: Message) => {
 });
 
 client.on('presenceUpdate', async (oldPresence, newPresence) => {
+  if (!newPresence) return; // If the new presence is null, do nothing.
+  else if (newPresence.user!.id !== config.WATCHER_ID) return; // If the user is not the watcher, do nothing.
+  
   if (debugMode) {
     sendToAdmin(`State: ${oldPresence?.status}, ${newPresence?.status}\nStatus: ${oldPresence?.activities[0]?.state}, ${newPresence?.activities[0]?.state}`);
   }
-  if (!newPresence) return; // If the new presence is null, do nothing.
-  else if (newPresence.user!.id !== config.WATCHER_ID) return; // If the user is not the watcher, do nothing.
-  else if (oldPresence?.status !== newPresence.status) return;
+  
+  if (oldPresence?.status !== newPresence.status) return;
 
   const oldStatus = oldPresence?.activities[0]?.state ?? null; // Get the old status, or use 'offline' if it's not available.
   const newStatus = newPresence.activities[0]?.state; // Get the new status.
