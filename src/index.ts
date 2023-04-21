@@ -18,11 +18,10 @@ const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitFi
 
 // Cooldown for Presence Update
 const cooldown = new Collection<string, number>();
-const cooldownDuration = 1 * 1 * 1000; 
+const cooldownDuration = 15 * 60 * 1000; 
 
 const newsEmbed = new EmbedBuilder()
   .setColor(EMBED_COLOR)
-  .setTimestamp(Date.now())
   .setFooter({ text: EMBED_FOOTER_TEXT });
 
 client.once('ready', () => {
@@ -32,12 +31,12 @@ client.once('ready', () => {
 client.on('presenceUpdate', (oldPresence, newPresence) => {
   if (!newPresence) return; // If the new presence is null, do nothing.
   else if (newPresence.user!.id !== watcher) return; // If the user is not the watcher, do nothing.
-  else if (oldPresence?.status === 'offline' || newPresence.status === 'online') return;
+  else if (oldPresence?.status == 'offline' || newPresence.status == 'offline') return;
 
   const oldStatus = oldPresence?.activities[0]?.state ?? null; // Get the old status, or use 'offline' if it's not available.
   const newStatus = newPresence.activities[0]?.state; // Get the new status.
 
-  if (!newStatus) return; // If the new status is null, do nothing.
+  if (!newStatus || !oldStatus) return; // If the new status is null, do nothing.
 
   if (oldStatus !== newStatus) {
     const channel = client.channels.cache.get(channelID) as TextChannel;
@@ -57,6 +56,7 @@ client.on('presenceUpdate', (oldPresence, newPresence) => {
     }
 
     newsEmbed.setTitle(`${newStatus}`)
+    newsEmbed.setTimestamp(Date.now())
     channel.send({content: `@everyone`, embeds: [newsEmbed] });
     
     console.log(
