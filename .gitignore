@@ -7,6 +7,9 @@
 # Environment variables
 .env
 
+# Configuration files
+config.json
+
 # Editor and operating system specific files
 .vscode/
 *.log
