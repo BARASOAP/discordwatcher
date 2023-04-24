@@ -10,6 +10,9 @@
 # Configuration files
 config.json
 
+# Buffer files
+recentMessages.json
+
 # Editor and operating system specific files
 .vscode/
 *.log

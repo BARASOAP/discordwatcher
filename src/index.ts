@@ -1,4 +1,5 @@
 import { ChannelType, Partials, Client, IntentsBitField, Message, TextChannel, Collection, EmbedBuilder, DMChannel } from 'discord.js';
+import { CircularBuffer, loadBufferFromFile, saveBufferToFile } from './circularBuffer';
 import config from './config.json';
 import * as dotenv from 'dotenv';
 dotenv.config()
@@ -24,6 +25,7 @@ const client = new Client({
   ] 
 });
 
+const recentMessages = loadBufferFromFile('recentMessages.json', 15);
 const START_TIME = Math.floor(Date.now() / 1000);
 const EMBED_COLOR = parseInt(config.EMBED_COLOR, 16);
 
@@ -117,6 +119,15 @@ client.on('presenceUpdate', async (oldPresence, newPresence) => {
   if (!newStatus || !oldStatus) return; // If the new status is null, do nothing.
 
   if (oldStatus !== newStatus) {
+
+    // Check if the status is already in the buffer
+    if (recentMessages.contains(newStatus)) {
+      if (debugMode) {
+        sendToAdmin(`Status already in buffer: ${newStatus}`);
+      }      
+      return;
+    }
+
     const channel = client.channels.cache.get(config.CHANNEL_ID) as TextChannel;
 
     if (!channel) return;
@@ -136,6 +147,10 @@ client.on('presenceUpdate', async (oldPresence, newPresence) => {
     newsEmbed.setTitle(`${newStatus}`)
     newsEmbed.setTimestamp(Date.now())
     channel.send({content: `@everyone`, embeds: [newsEmbed] });
+
+    recentMessages.push(newStatus);
+
+    saveBufferToFile('recentMessages.json', recentMessages);
 
     console.log(
       `${newPresence.user!.tag} changed status from ${oldStatus} to ${newStatus}.`
