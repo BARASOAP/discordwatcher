@@ -1,8 +1,8 @@
-import { ChannelType, Partials, IntentsBitField, Message, TextChannel, Collection, EmbedBuilder, DMChannel} from 'discord.js';
+import { ChannelType, Partials, IntentsBitField, Message, TextChannel, Collection, EmbedBuilder, DMChannel } from 'discord.js';
 import { BotClient } from './botClient';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as ping from './commands/ping';
+import ping from './commands/ping';
 import { CircularBuffer, loadBufferFromFile, saveBufferToFile } from './circularBuffer';
 import * as dotenv from 'dotenv';
 dotenv.config()
@@ -22,26 +22,26 @@ if (!WATCHER_ID || !CHANNEL_ID || !TOKEN || !ADMIN_ID || !EMBED_COLOR || !EMBED_
 // Create the following constants after the checks to satisfy TypeScript's type checks
 const verifiedAdminId: string = ADMIN_ID;
 
-const client = new BotClient({ 
+const client = new BotClient({
   partials: [
-    Partials.Message, 
+    Partials.Message,
     Partials.Channel
-  ], 
+  ],
   intents: [
-    IntentsBitField.Flags.Guilds, 
-    IntentsBitField.Flags.GuildMessages, 
-    IntentsBitField.Flags.MessageContent, 
-    IntentsBitField.Flags.GuildPresences, 
+    IntentsBitField.Flags.Guilds,
+    IntentsBitField.Flags.GuildMessages,
+    IntentsBitField.Flags.MessageContent,
+    IntentsBitField.Flags.GuildPresences,
     IntentsBitField.Flags.DirectMessages
-  ] 
+  ]
 });
 
 // Dynamically retreive command files
 const commandsPath = path.join(__dirname, 'commands');
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.ts'));
+const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js') && file !== 'command.js');
 for (const file of commandFiles) {
   const filePath = path.join(commandsPath, file);
-  const command = require(filePath);
+  const command = require(filePath).default;
   if ('data' in command && 'execute' in command) {
     client.commands.set(command.data.name, command);
 
@@ -58,7 +58,7 @@ const START_TIME = Math.floor(Date.now() / 1000);
 
 // Cooldown for Presence Update
 const cooldown = new Collection<string, number>();
-const cooldownDuration = 15 * 60 * 1000; 
+const cooldownDuration = 15 * 60 * 1000;
 
 let debugMode = false;
 
@@ -122,7 +122,7 @@ client.on('messageCreate', async (message: Message) => {
   else if (message.author.id !== ADMIN_ID) return;
 
   // Check if message content is 'debug true' and read value after
-  if (message.content.startsWith('debug')) { 
+  if (message.content.startsWith('debug')) {
     const debug = message.content.split(' ')[1];
     if (debug === 'true') {
       setDebug(true);
@@ -154,11 +154,11 @@ client.on('messageCreate', async (message: Message) => {
 client.on('presenceUpdate', async (oldPresence, newPresence) => {
   if (!newPresence) return; // If the new presence is null, do nothing.
   else if (newPresence.user!.id !== WATCHER_ID) return; // If the user is not the watcher, do nothing.
-  
+
   if (debugMode) {
     sendToAdmin(`State: ${oldPresence?.status}, ${newPresence?.status}\nStatus: ${oldPresence?.activities[0]?.state}, ${newPresence?.activities[0]?.state}`);
   }
-  
+
   if (oldPresence?.status !== newPresence.status) return;
 
   const oldStatus = oldPresence?.activities[0]?.state ?? null; // Get the old status, or use 'offline' if it's not available.
@@ -175,11 +175,11 @@ client.on('presenceUpdate', async (oldPresence, newPresence) => {
     const lastUpdate = cooldown.get('presenceUpdate');
 
     if (lastUpdate && now - lastUpdate < cooldownDuration) {
-        const timeLeft = ((cooldownDuration - (now - lastUpdate)) / 1000).toFixed(1);
-        if (debugMode) {
-            sendToAdmin(`Timeout in ${timeLeft} seconds`);
-        }
-        return;
+      const timeLeft = ((cooldownDuration - (now - lastUpdate)) / 1000).toFixed(1);
+      if (debugMode) {
+        sendToAdmin(`Timeout in ${timeLeft} seconds`);
+      }
+      return;
     }
 
     cooldown.set('presenceUpdate', now);
@@ -187,14 +187,14 @@ client.on('presenceUpdate', async (oldPresence, newPresence) => {
 
     newsEmbed.setTitle(`${newStatus}`);
     newsEmbed.setTimestamp(Date.now());
-    channel.send({content: `@everyone`, embeds: [newsEmbed]});
+    channel.send({ content: `@everyone`, embeds: [newsEmbed] });
 
     recentMessages.push(newStatus);
     saveBufferToFile('recentMessages.json', recentMessages);
 
     console.log(`${newPresence.user!.tag} changed status from ${oldStatus} to ${newStatus}.`);
   } else if (debugMode && newStatus) {
-      sendToAdmin(`Status already in buffer: ${newStatus}`);
+    sendToAdmin(`Status already in buffer: ${newStatus}`);
   }
 
 });

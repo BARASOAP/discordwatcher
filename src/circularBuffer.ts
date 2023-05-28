@@ -42,7 +42,7 @@ export function loadBufferFromFile(filename: string, bufferSize: number): Circul
     console.error(`Error reading buffer file: ${filename}`, error);
     bufferContent = [];
   }
-  
+
   const buffer = new CircularBuffer(bufferSize);
   bufferContent.forEach((item: string) => buffer.push(item));
 
