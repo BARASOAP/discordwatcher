@@ -1,4 +1,8 @@
-import { ChannelType, Partials, Client, IntentsBitField, Message, TextChannel, Collection, EmbedBuilder, DMChannel } from 'discord.js';
+import { ChannelType, Partials, IntentsBitField, Message, TextChannel, Collection, EmbedBuilder, DMChannel} from 'discord.js';
+import { BotClient } from './botClient';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as ping from './commands/ping';
 import { CircularBuffer, loadBufferFromFile, saveBufferToFile } from './circularBuffer';
 import * as dotenv from 'dotenv';
 dotenv.config()
@@ -18,7 +22,7 @@ if (!WATCHER_ID || !CHANNEL_ID || !TOKEN || !ADMIN_ID || !EMBED_COLOR || !EMBED_
 // Create the following constants after the checks to satisfy TypeScript's type checks
 const verifiedAdminId: string = ADMIN_ID;
 
-const client = new Client({ 
+const client = new BotClient({ 
   partials: [
     Partials.Message, 
     Partials.Channel
@@ -31,6 +35,23 @@ const client = new Client({
     IntentsBitField.Flags.DirectMessages
   ] 
 });
+
+// Dynamically retreive command files
+const commandsPath = path.join(__dirname, 'commands');
+const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.ts'));
+for (const file of commandFiles) {
+  const filePath = path.join(commandsPath, file);
+  const command = require(filePath);
+  if ('data' in command && 'execute' in command) {
+    client.commands.set(command.data.name, command);
+
+    console.log(`Loaded command: ${command.data.name}`);
+  } else {
+    console.error(`Error loading command: ${filePath} missing data or execute.`);
+  }
+}
+
+client.commands.set(ping.data.name, ping);
 
 const recentMessages = loadBufferFromFile('recentMessages.json', 15);
 const START_TIME = Math.floor(Date.now() / 1000);
@@ -78,6 +99,22 @@ const newsEmbed = new EmbedBuilder()
 
 client.once('ready', () => {
   console.log(`Logged in as ${client.user!.tag}!`);
+});
+
+// Receive command interactions
+client.on('interactionCreate', async interaction => {
+  if (!interaction.isCommand()) return;
+
+  const command = client.commands.get(interaction.commandName);
+
+  if (!command) return;
+
+  try {
+    await command.execute(interaction);
+  } catch (error) {
+    console.error(error);
+    await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+  }
 });
 
 client.on('messageCreate', async (message: Message) => {
