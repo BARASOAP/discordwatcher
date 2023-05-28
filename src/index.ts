@@ -150,7 +150,7 @@ client.on('presenceUpdate', async (oldPresence, newPresence) => {
 
     newsEmbed.setTitle(`${newStatus}`);
     newsEmbed.setTimestamp(Date.now());
-    channel.send({content: `@everyone`, embeds: [newsEmbed]});
+    channel.send({embeds: [newsEmbed]});
 
     recentMessages.push(newStatus);
     saveBufferToFile('recentMessages.json', recentMessages);
