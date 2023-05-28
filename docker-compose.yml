@@ -4,6 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    restart: unless-stopped
     volumes:
       - ./recentMessages.json:/app/recentMessages.json
     env_file:
